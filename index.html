@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BookIt</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #2481cc;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* === HEADER === */
+        .header {
+            padding: 16px 20px;
+            background: var(--tg-theme-bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            color: var(--tg-theme-hint-color);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* === СТРАНИЦЫ === */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === КАРТОЧКИ БИЗНЕСОВ === */
+        .businesses-grid {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .business-card {
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            height: 180px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .business-card:active {
+            transform: scale(0.98);
+        }
+
+        .business-card-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .business-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .business-card-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            color: white;
+        }
+
+        .business-emoji {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .business-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .business-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .business-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+        }
+
+        /* === МЕНЮ КАФЕ === */
+        .menu-categories {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .menu-categories::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-chip {
+            flex-shrink: 0;
+            padding: 10px 18px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .category-chip.active {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .menu-items {
+            padding: 0 16px 100px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .menu-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .menu-item:active {
+            transform: scale(0.98);
+        }
+
+        .menu-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .menu-item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .menu-item-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .menu-item-volume {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color);
+            margin-bottom: 8px;
+        }
+
+        .menu-item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--tg-theme-button-color);
+        }
+
+        .menu-item-add {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            align-self: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* === УСЛУГИ БАРБЕРШОПА === */
+        .masters-scroll {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .masters-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .master-card {
+            flex-shrink: 0;
+            width: 140px;
+            text-align: center;
+            cursor: pointer;
+            padding: 16px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            transition: all 0.2s;
+        }
+
+        .master-card.selected {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .master-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .master-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .master-rating {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            margin: 0 16px 12px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .service-item.selected {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .service-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .service-info span {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .service-price {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* === ВЫБОР ДАТЫ И ВРЕМЕНИ === */
+        .dates-scroll {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .date-chip {
+            flex-shrink: 0;
+            width: 60px;
+            padding: 12px 8px;
+            text-align: center;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .date-chip.selected {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .date-chip-day {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .date-chip-weekday {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 0 16px 100px;
+        }
+
+        .time-slot {
+            padding: 12px;
+            text-align: center;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .time-slot.selected {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .time-slot.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* === КОРЗИНА === */
+        .cart-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .cart-fab.visible {
+            display: flex;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 24px;
+            height: 24px;
+            background: #ff3b30;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-items {
+            padding: 16px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
+        }
+
+        .cart-item-qty {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--tg-theme-secondary-bg-color);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .cart-total {
+            padding: 16px;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        /* === BOTTOM BUTTON === */
+        .bottom-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: var(--tg-theme-bg-color);
+            border-top: 1px solid var(--tg-theme-secondary-bg-color);
+        }
+
+        .bottom-btn button {
+            width: 100%;
+            padding: 16px;
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .bottom-btn button:disabled {
+            opacity: 0.5;
+        }
+
+        /* === BACK BUTTON === */
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            color: var(--tg-theme-link-color);
+            font-size: 16px;
+        }
+
+        /* === SECTION === */
+        .section-title {
+            padding: 16px 16px 8px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* === SUCCESS === */
+        .success-page {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .success-text {
+            color: var(--tg-theme-hint-color);
+            margin-bottom: 8px;
+        }
+
+        .success-points {
+            margin-top: 24px;
+            padding: 16px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        /* === LOADER === */
+        .loader {
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .loader::after {
+            content: "";
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--tg-theme-secondary-bg-color);
+            border-top-color: var(--tg-theme-button-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Главная страница -->
+    <div id="page-home" class="page active">
+        <div class="header">
+            <h1>BookIt</h1>
+            <div class="header-subtitle">Заказы и записи в одном месте</div>
+        </div>
+        
+        <div class="businesses-grid" id="businesses-list">
+            <!-- Бизнесы загрузятся сюда -->
+        </div>
+    </div>
+
+    <!-- Страница кафе (Pink Purple) -->
+    <div id="page-cafe" class="page">
+        <div class="back-btn" onclick="goHome()">← Назад</div>
+        
+        <div class="header">
+            <h1>🧋 Pink Purple</h1>
+            <div class="header-subtitle">Бабл ти и вафли</div>
+        </div>
+
+        <div class="menu-categories" id="cafe-categories">
+            <!-- Категории -->
+        </div>
+
+        <div class="menu-items" id="cafe-items">
+            <!-- Товары -->
+        </div>
+
+        <button class="cart-fab" id="cart-fab" onclick="openCart()">
+            🛒
+            <span class="cart-badge" id="cart-badge">0</span>
+        </button>
+    </div>
+
+    <!-- Страница корзины -->
+    <div id="page-cart" class="page">
+        <div class="back-btn" onclick="goToCafe()">← Назад к меню</div>
+        
+        <div class="header">
+            <h1>🛒 Корзина</h1>
+        </div>
+
+        <div class="cart-items" id="cart-items">
+            <!-- Товары корзины -->
+        </div>
+
+        <div class="cart-total" id="cart-total">Итого: 0₽</div>
+
+        <div class="bottom-btn">
+            <button onclick="submitCafeOrder()">Оформить заказ</button>
+        </div>
+    </div>
+
+    <!-- Страница барбершопа -->
+    <div id="page-barber" class="page">
+        <div class="back-btn" onclick="goHome()">← Назад</div>
+        
+        <div class="header">
+            <h1>💈 PORTOS</h1>
+            <div class="header-subtitle">Барбершоп</div>
+        </div>
+
+        <div class="section-title">Выберите мастера</div>
+        <div class="masters-scroll" id="masters-list">
+            <!-- Мастера -->
+        </div>
+
+        <div class="section-title">Выберите услугу</div>
+        <div id="services-list">
+            <!-- Услуги -->
+        </div>
+
+        <div class="bottom-btn">
+            <button id="barber-next-btn" onclick="goToDateTime()" disabled>Выбрать дату и время</button>
+        </div>
+    </div>
+
+    <!-- Страница выбора даты/времени -->
+    <div id="page-datetime" class="page">
+        <div class="back-btn" onclick="goToBarber()">← Назад</div>
+        
+        <div class="header">
+            <h1>📅 Дата и время</h1>
+        </div>
+
+        <div class="section-title">Выберите дату</div>
+        <div class="dates-scroll" id="dates-list">
+            <!-- Даты -->
+        </div>
+
+        <div class="section-title">Выберите время</div>
+        <div class="time-grid" id="times-list">
+            <!-- Слоты -->
+        </div>
+
+        <div class="bottom-btn">
+            <button id="book-btn" onclick="submitBooking()" disabled>Записаться</button>
+        </div>
+    </div>
+
+    <!-- Страница успеха -->
+    <div id="page-success" class="page">
+        <div class="success-page">
+            <div class="success-icon" id="success-icon">✅</div>
+            <div class="success-title" id="success-title">Готово!</div>
+            <div class="success-text" id="success-text"></div>
+            <div class="success-text" id="success-details"></div>
+            <div class="success-points" id="success-points"></div>
+        </div>
+
+        <div class="bottom-btn">
+            <button onclick="goHome()">На главную</button>
+        </div>
+    </div>
+
+    <script>
+        // === Telegram WebApp ===
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Применяем тему Telegram
+        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#ffffff');
+        document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+        document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#999999');
+        document.documentElement.style.setProperty('--tg-theme-link-color', tg.themeParams.link_color || '#2481cc');
+        document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#2481cc');
+        document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
+        document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color || '#f0f0f0');
+
+        // === API URL ===
+        const API_URL = 'https://bookit-api-camelot770.amvera.io'; // Заменить после деплоя
+
+        // === Данные пользователя ===
+        const user = tg.initDataUnsafe?.user || { id: 0, first_name: 'Guest' };
+
+        // === Состояние ===
+        let cart = [];
+        let cafeMenu = {};
+        let selectedCategory = null;
+
+        let masters = [];
+        let services = {};
+        let selectedMaster = null;
+        let selectedService = null;
+        let selectedDate = null;
+        let selectedTime = null;
+        let availableSlots = [];
+
+        // === Навигация ===
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function goHome() {
+            showPage('page-home');
+        }
+
+        function goToCafe() {
+            showPage('page-cafe');
+        }
+
+        function goToBarber() {
+            showPage('page-barber');
+        }
+
+        // === Загрузка бизнесов ===
+        async function loadBusinesses() {
+            const businesses = [
+                {
+                    id: 'pink_purple',
+                    name: 'Pink Purple',
+                    emoji: '🧋',
+                    desc: 'Бабл ти и вафли',
+                    gradient: 'linear-gradient(135deg, #9C27B0 0%, #E91E63 100%)'
+                },
+                {
+                    id: 'portos',
+                    name: 'PORTOS',
+                    emoji: '💈',
+                    desc: 'Мужской барбершоп',
+                    gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+                }
+            ];
+
+            const container = document.getElementById('businesses-list');
+            container.innerHTML = businesses.map(biz => `
+                <div class="business-card" onclick="openBusiness('${biz.id}')" style="background: ${biz.gradient}">
+                    <div class="business-card-content">
+                        <div class="business-emoji">${biz.emoji}</div>
+                        <div class="business-name">${biz.name}</div>
+                        <div class="business-desc">${biz.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openBusiness(id) {
+            if (id === 'pink_purple') {
+                loadCafeMenu();
+                showPage('page-cafe');
+            } else if (id === 'portos') {
+                loadBarberData();
+                showPage('page-barber');
+            }
+        }
+
+        // === КАФЕ ===
+        async function loadCafeMenu() {
+            // Встроенные данные (можно заменить на API)
+            cafeMenu = {
+                top: {
+                    name: '⭐ Топ',
+                    items: [
+                        {id: 'pink_matcha', name: 'Пинк Матча', volume: '500мл', price: 459},
+                        {id: 'dubai', name: 'Дубайский шоколад', volume: '500мл', price: 599},
+                        {id: 'coco_pink', name: 'Коко Пинк', volume: '500мл', price: 499},
+                    ]
+                },
+                smoothie: {
+                    name: '🥤 Смузи',
+                    items: [
+                        {id: 'berry', name: 'Ягодный', volume: '500мл', price: 489},
+                        {id: 'mango', name: 'Манго-Банан', volume: '500мл', price: 489},
+                        {id: 'strawberry', name: 'Клубника-Банан', volume: '500мл', price: 489},
+                    ]
+                },
+                milky: {
+                    name: '🥛 Милки',
+                    items: [
+                        {id: 'original', name: 'Оригинал', volume: '500мл', price: 379},
+                        {id: 'taro', name: 'Таро', volume: '500мл', price: 459},
+                        {id: 'matcha', name: 'Матча', volume: '500мл', price: 459},
+                    ]
+                },
+                waffles: {
+                    name: '🧇 Вафли',
+                    items: [
+                        {id: 'chocolate', name: 'Шоколадная', price: 449},
+                        {id: 'nutella', name: 'Нутелла', price: 489},
+                        {id: 'oreo', name: 'Орео', price: 509},
+                    ]
+                },
+                coffee: {
+                    name: '☕ Кофе',
+                    items: [
+                        {id: 'cappuccino', name: 'Капучино', price: 249},
+                        {id: 'latte', name: 'Латте', price: 249},
+                        {id: 'raf', name: 'Раф', price: 279},
+                    ]
+                }
+            };
+
+            renderCafeCategories();
+            selectCategory(Object.keys(cafeMenu)[0]);
+        }
+
+        function renderCafeCategories() {
+            const container = document.getElementById('cafe-categories');
+            container.innerHTML = Object.entries(cafeMenu).map(([id, cat]) => `
+                <button class="category-chip ${selectedCategory === id ? 'active' : ''}" onclick="selectCategory('${id}')">
+                    ${cat.name}
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(catId) {
+            selectedCategory = catId;
+            renderCafeCategories();
+            renderCafeItems();
+        }
+
+        function renderCafeItems() {
+            const cat = cafeMenu[selectedCategory];
+            const container = document.getElementById('cafe-items');
+            
+            container.innerHTML = cat.items.map(item => `
+                <div class="menu-item">
+                    <div class="menu-item-image">🧋</div>
+                    <div class="menu-item-info">
+                        <div class="menu-item-name">${item.name}</div>
+                        ${item.volume ? `<div class="menu-item-volume">${item.volume}</div>` : ''}
+                        <div class="menu-item-price">${item.price}₽</div>
+                    </div>
+                    <button class="menu-item-add" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">+</button>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id, name, price) {
+            const existing = cart.find(item => item.id === id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({id, name, price, qty: 1});
+            }
+            updateCartBadge();
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function updateCartBadge() {
+            const total = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cart-badge').textContent = total;
+            document.getElementById('cart-fab').classList.toggle('visible', total > 0);
+        }
+
+        function openCart() {
+            renderCart();
+            showPage('page-cart');
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--tg-theme-hint-color)">Корзина пуста</p>';
+                document.getElementById('cart-total').textContent = 'Итого: 0₽';
+                return;
+            }
+
+            container.innerHTML = cart.map((item, idx) => `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-weight:600">${item.name}</div>
+                        <div style="color:var(--tg-theme-hint-color)">${item.price}₽</div>
+                    </div>
+                    <div class="cart-item-qty">
+                        <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
+                        <span>${item.qty}</span>
+                        <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            document.getElementById('cart-total').textContent = `Итого: ${total}₽`;
+        }
+
+        function changeQty(idx, delta) {
+            cart[idx].qty += delta;
+            if (cart[idx].qty <= 0) {
+                cart.splice(idx, 1);
+            }
+            renderCart();
+            updateCartBadge();
+        }
+
+        async function submitCafeOrder() {
+            if (cart.length === 0) return;
+
+            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+            try {
+                const response = await fetch(`${API_URL}/api/orders`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: user.id,
+                        username: user.username,
+                        first_name: user.first_name,
+                        business_id: 'pink_purple',
+                        items: cart,
+                        total: total,
+                        points_used: 0
+                    })
+                });
+
+                const result = await response.json();
+
+                document.getElementById('success-icon').textContent = '✅';
+                document.getElementById('success-title').textContent = 'Заказ оформлен!';
+                document.getElementById('success-text').textContent = `Заказ #${result.order_id}`;
+                document.getElementById('success-details').textContent = `Сумма: ${total}₽`;
+                document.getElementById('success-points').textContent = `+${result.points_earned} баллов`;
+
+                cart = [];
+                updateCartBadge();
+                showPage('page-success');
+                tg.HapticFeedback.notificationOccurred('success');
+
+            } catch (e) {
+                alert('Ошибка при оформлении заказа');
+            }
+        }
+
+        // === БАРБЕРШОП ===
+        async function loadBarberData() {
+            masters = [
+                {id: 'artem', name: 'Артём', rating: 4.9, exp: '5 лет'},
+                {id: 'dmitry', name: 'Дмитрий', rating: 4.8, exp: '3 года'},
+                {id: 'rustam', name: 'Рустам', rating: 4.9, exp: '7 лет'},
+                {id: 'vlad', name: 'Владислав', rating: 4.7, exp: '2 года'},
+            ];
+
+            services = {
+                haircut: {
+                    name: '✂️ Стрижки',
+                    items: [
+                        {id: 'mens', name: 'Мужская стрижка', price: 1200, duration: 45},
+                        {id: 'kids', name: 'Детская стрижка', price: 800, duration: 30},
+                        {id: 'buzz', name: 'Под машинку', price: 600, duration: 20},
+                    ]
+                },
+                beard: {
+                    name: '🧔 Борода',
+                    items: [
+                        {id: 'trim', name: 'Моделирование бороды', price: 700, duration: 30},
+                        {id: 'royal', name: 'Королевское бритьё', price: 900, duration: 40},
+                    ]
+                },
+                combo: {
+                    name: '🎯 Комбо',
+                    items: [
+                        {id: 'full', name: 'Стрижка + Борода', price: 1700, duration: 75},
+                        {id: 'premium', name: 'Полный уход', price: 2200, duration: 90},
+                    ]
+                }
+            };
+
+            renderMasters();
+            renderServices();
+        }
+
+        function renderMasters() {
+            const container = document.getElementById('masters-list');
+            container.innerHTML = masters.map(m => `
+                <div class="master-card ${selectedMaster?.id === m.id ? 'selected' : ''}" onclick="selectMaster('${m.id}')">
+                    <div class="master-avatar">💈</div>
+                    <div class="master-name">${m.name}</div>
+                    <div class="master-rating">⭐ ${m.rating}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectMaster(id) {
+            selectedMaster = masters.find(m => m.id === id);
+            renderMasters();
+            updateBarberButton();
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        function renderServices() {
+            const container = document.getElementById('services-list');
+            let html = '';
+
+            for (const [catId, cat] of Object.entries(services)) {
+                html += `<div class="section-title" style="margin-top:16px">${cat.name}</div>`;
+                html += cat.items.map(s => `
+                    <div class="service-item ${selectedService?.id === s.id ? 'selected' : ''}" onclick="selectService('${catId}', '${s.id}')">
+                        <div class="service-info">
+                            <h3>${s.name}</h3>
+                            <span>${s.duration} мин</span>
+                        </div>
+                        <div class="service-price">${s.price}₽</div>
+                    </div>
+                `).join('');
+            }
+
+            container.innerHTML = html;
+        }
+
+        function selectService(catId, svcId) {
+            selectedService = services[catId].items.find(s => s.id === svcId);
+            renderServices();
+            updateBarberButton();
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        function updateBarberButton() {
+            document.getElementById('barber-next-btn').disabled = !(selectedMaster && selectedService);
+        }
+
+        async function goToDateTime() {
+            await loadDates();
+            showPage('page-datetime');
+        }
+
+        async function loadDates() {
+            const dates = [];
+            const weekdays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+            const today = new Date();
+
+            for (let i = 0; i < 14; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                dates.push({
+                    date: date.toISOString().split('T')[0],
+                    day: date.getDate(),
+                    weekday: weekdays[date.getDay()],
+                    isToday: i === 0
+                });
+            }
+
+            const container = document.getElementById('dates-list');
+            container.innerHTML = dates.map(d => `
+                <div class="date-chip ${selectedDate === d.date ? 'selected' : ''}" onclick="selectDate('${d.date}')">
+                    <div class="date-chip-day">${d.day}</div>
+                    <div class="date-chip-weekday">${d.isToday ? 'Сегодня' : d.weekday}</div>
+                </div>
+            `).join('');
+
+            if (!selectedDate) {
+                selectDate(dates[0].date);
+            }
+        }
+
+        async function selectDate(date) {
+            selectedDate = date;
+            loadDates();
+            await loadTimeSlots();
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        async function loadTimeSlots() {
+            // Все слоты (в реальности — запрос к API)
+            const allSlots = ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'];
+            
+            // Случайно делаем некоторые недоступными (имитация)
+            availableSlots = allSlots.filter(() => Math.random() > 0.3);
+
+            const container = document.getElementById('times-list');
+            container.innerHTML = allSlots.map(slot => {
+                const available = availableSlots.includes(slot);
+                return `
+                    <div class="time-slot ${selectedTime === slot ? 'selected' : ''} ${!available ? 'disabled' : ''}" 
+                         onclick="${available ? `selectTime('${slot}')` : ''}">
+                        ${slot}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectTime(time) {
+            selectedTime = time;
+            loadTimeSlots();
+            document.getElementById('book-btn').disabled = false;
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        async function submitBooking() {
+            if (!selectedMaster || !selectedService || !selectedDate || !selectedTime) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/bookings`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: user.id,
+                        username: user.username,
+                        first_name: user.first_name,
+                        business_id: 'portos',
+                        service_id: selectedService.id,
+                        service_name: selectedService.name,
+                        service_price: selectedService.price,
+                        master_id: selectedMaster.id,
+                        master_name: selectedMaster.name,
+                        date: selectedDate,
+                        time: selectedTime
+                    })
+                });
+
+                const result = await response.json();
+
+                const dateDisplay = new Date(selectedDate).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
+
+                document.getElementById('success-icon').textContent = '💈';
+                document.getElementById('success-title').textContent = 'Вы записаны!';
+                document.getElementById('success-text').textContent = `${selectedService.name} у ${selectedMaster.name}`;
+                document.getElementById('success-details').textContent = `${dateDisplay} в ${selectedTime}`;
+                document.getElementById('success-points').textContent = `+${result.points_earned} баллов`;
+
+                // Сброс
+                selectedMaster = null;
+                selectedService = null;
+                selectedDate = null;
+                selectedTime = null;
+
+                showPage('page-success');
+                tg.HapticFeedback.notificationOccurred('success');
+
+            } catch (e) {
+                alert('Ошибка при записи');
+            }
+        }
+
+        // === INIT ===
+        loadBusinesses();
+    </script>
+</body>
+</html>
